@@ -26,3 +26,16 @@ Installing the server packages:
 We have chosen (default) SQlite-DB as backend.
 You can start|stop|restart oml2-server normally:
 * sudo service <> start|stop|restart
+
+Configuring the server at /etc/default/oml2-server:
+* -l, --listen=3003                 Port to listen for TCP based clients
+* -D, --data-dir=/opt/oml-db        Directory to store database files (sqlite)
+* --user=oml                        Change server user id
+* --group=oml                       Change server group id
+* -d, --debug-level=4               Increase debug level (4=debug, ...)
+* --logfile=/var/log/oml_server.log File to log to
+
+Testing our (local) server test-bed:
+* oml2-generator --amplitude 1 --frequency 1000 --samples 10 --sample-interval .1 \
+        --oml-id localservertest --oml-domain installtest --oml-collect localhost
+* sqlitebrowser /opt/oml-db/installtest.sq3
