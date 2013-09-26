@@ -22,25 +22,41 @@ def main(argv=None):
                                           epilog='Please, report bugs to ' + bug_reporter_,
                                           formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
+        parser_.add_argument('agent',
+                             choices=['flowvisor', 'vm-server'],
+                             help='choose the type of agent')
+
         parser_.add_argument('-d', '--debug',
                              default=False,
                              action='store_true',
-                             dest='debug',
                              help='set logging level to DEBUG')
 
         parser_.add_argument('-c', '--config_file',
                              default='metering.xml',
                              help='set configuration file')
 
-        results_ = parser_.parse_args()
+        args_ = parser_.parse_args()
 
     except Exception as ex:
         print 'Got an Exception parsing flags/options:', ex
         return False
 
-    LOG = utils.ColorLog(name='metering_oml', debug=results_.debug)
-    LOG.info("%s" % (results_,))
+    LOG = utils.ColorLog(name='metering_oml', debug=args_.debug)
+    LOG.info("%s" % (args_,))
 
+    configs_ = utils.ConfigParser(args_.config_file, args_.agent)
+    LOG.debug("configs=%s" % (str(configs_),))
+
+    if len(configs_.data.get('collectors')) != 1:
+        LOG.error("Configuration error: unable to send data to more than one collector!")
+        return False
+
+    if args_.agent == 'vm-server' and len(configs_.data.get('vt_ams')) != 1:
+        LOG.error("Configuration error (vm-server): unable to retrive data to more than one vt-am!")
+        return False
+
+    LOG.warning("Bye Bye...")
+    return True
 
 if __name__ == '__main__':
     sys.exit(main())

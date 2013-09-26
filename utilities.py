@@ -1,5 +1,6 @@
 from termcolor import colored
 import logging
+import xml.etree.ElementTree as ET
 
 
 class ColorLog(object):
@@ -28,3 +29,29 @@ class ColorLog(object):
                 colored(str(s), **self.colormap[name]), *args)
 
         return getattr(self._logger, name)
+
+
+class ConfigParser(object):
+    def __init__(self, cfile, atype):
+        tree = ET.parse(cfile)
+        root = tree.getroot()
+        self.data = {'domain': root.attrib.get('domain'),
+                     'id': root.attrib.get('id'),
+                     'collectors': [],}
+
+        for colls_ in root.iter('collect'):
+            self.data['collectors'].append(colls_.attrib.get('url'))
+
+        for streams_ in root.iter('stream'):
+            if streams_.attrib.get('type') == atype:
+                self.data['name'] = streams_.attrib.get('mp')
+                self.data['interval'] = streams_.attrib.get('interval')
+
+            if streams_.attrib.get('type') == 'vm-server':
+                self.data['vt_ams'] = []
+                for vt_am_ in streams_:
+                    self.data['vt_ams'].append((vt_am_.attrib.get('address'),
+                                                vt_am_.attrib.get('port')))
+
+    def __str__(self):
+        return "%s" % (self.data)

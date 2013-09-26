@@ -1,4 +1,4 @@
-<omlc domain="ocf-measurement-oml" id="oml-localhost">
+<omlc domain="ocf-measurement-oml" id="oml-192.168.57.200">
     <collect url="tcp:127.0.0.1:3003">
         <stream mp="vt-am-point" interval="5" type="vm-server">
             <vt-am address="127.0.0.1" port="9999" />
