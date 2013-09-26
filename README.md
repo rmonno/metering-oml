@@ -6,7 +6,7 @@ Metering agents and applications using OML project.
 # wiki of OML project
 * http://mytestbed.net/projects/oml/wiki
 
-# Installation Phase
+# Installation Phase (server/collector side)
 The reference Operating System is an Ubuntu-server 12.04 (ubuntu-12.04.2-server-amd64)
 * user/password: oml/oml
 * sudo apt-get update && sudo apt-get upgrade
@@ -39,3 +39,7 @@ Testing our (local) server test-bed:
 * oml2-generator --amplitude 1 --frequency 1000 --samples 10 --sample-interval .1 \
         --oml-id localservertest --oml-domain installtest --oml-collect localhost
 * sqlitebrowser /opt/oml-db/installtest.sq3
+
+# Installation Phase (client/agents side)
+* sudo apt-get install python-pip
+* sudo pip install oml4py
