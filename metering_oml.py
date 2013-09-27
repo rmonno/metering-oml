@@ -10,6 +10,7 @@ if __name__ == '__main__':
         sys.path.insert(0, bp_)
 
 import utilities as utils
+import agents
 LOG = None
 
 def main(argv=None):
@@ -55,7 +56,25 @@ def main(argv=None):
         LOG.error("Configuration error (vm-server): unable to retrive data to more than one vt-am!")
         return False
 
-    LOG.warning("Bye Bye...")
+    try:
+        agent_ = None
+        if args_.agent == 'vm-server':
+            agent_ = agents.VTAgent('VTAgent', configs_.data.get('domain'), configs_.data.get('id'),
+                                    configs_.data.get('collectors')[0], configs_.data.get('name'),
+                                    configs_.data.get('interval'), configs_.data.get('vt_ams')[0], LOG)
+            agent_.loop(secs=10)
+
+    except KeyboardInterrupt:
+        LOG.warning("User interruption!")
+        if agent_:
+            agent_.stop()
+
+    except Exception as ex:
+        LOG.error("Exception: %s" % (ex,))
+
+    if agent_:
+        agent_.join(timeout=10)
+
     return True
 
 if __name__ == '__main__':
