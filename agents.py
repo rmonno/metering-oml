@@ -2,6 +2,7 @@ import threading
 import time
 import random
 import string
+import requests
 from abc import ABCMeta, abstractmethod
 from oml4py import OMLBase
 
@@ -39,7 +40,7 @@ class Agent(threading.Thread):
             while self.__isStopped() == False:
                 self.action()
 
-                self.__debug("Waiting %d before perform an action" %
+                self.__debug("Waiting %dsecs before perform an action" %
                              (self.__interval,))
                 time.sleep(self.__interval)
 
@@ -107,14 +108,22 @@ class XenServerAgent(Agent):
                                              interval,
                                              logger)
         self.mp_name = mp_name
-        self.address = addr
-        self.user = user
-        self.pswd = pswd
-        self.info("XenServerAgent name=%s, addr=%s, user=%s, pswd=%s" %
-                  (self.mp_name, self.address, self.user, self.pswd))
+        self.url = 'http://' + addr + '/rrd_updates'
+        self.auth = (user, pswd)
+        self.interval = int(interval)
+        self.info("XenServerAgent name=%s, url=%s, auth=%s" %
+                  (self.mp_name, self.url, self.auth,))
 
     def define_measurements(self):
         self.error('Not implemented yet')
 
     def action(self):
-        self.error('Not implemented yet')
+        try:
+            start_ = int(round(time.time())) - self.interval
+            resp_ = requests.get(url=self.url,
+                                 auth=self.auth,
+                                 params={'start': start_})
+            self.info("%s: response=%s" % (self.mp_name, resp_.text))
+
+        except requests.exceptions.RequestException as e:
+            self.error(str(e))
