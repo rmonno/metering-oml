@@ -24,7 +24,7 @@ def main(argv=None):
                                           formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
         parser_.add_argument('agent',
-                             choices=['flowvisor', 'vm-server'],
+                             choices=['flowvisor', 'xenserver', 'test'],
                              help='choose the type of agent')
 
         parser_.add_argument('-d', '--debug',
@@ -52,17 +52,33 @@ def main(argv=None):
         LOG.error("Configuration error: unable to send data to more than one collector!")
         return False
 
-    if args_.agent == 'vm-server' and len(configs_.data.get('vt_ams')) != 1:
-        LOG.error("Configuration error (vm-server): unable to retrive data to more than one vt-am!")
-        return False
-
     try:
         agent_ = None
-        if args_.agent == 'vm-server':
-            agent_ = agents.VTAgent('VTAgent', configs_.data.get('domain'), configs_.data.get('id'),
-                                    configs_.data.get('collectors')[0], configs_.data.get('name'),
-                                    configs_.data.get('interval'), configs_.data.get('vt_ams')[0], LOG)
+        if args_.agent == 'test':
+            agent_ = agents.TestAgent('TestAgent',
+                                      configs_.data.get('domain'),
+                                      configs_.data.get('id'),
+                                      configs_.data.get('collectors')[0],
+                                      configs_.data.get('name'),
+                                      configs_.data.get('interval'),
+                                      LOG)
             agent_.loop(secs=10)
+
+        elif args_.agent == 'xenserver':
+            agent_ = agents.XenServerAgent('XenServerAgent',
+                                            configs_.data.get('domain'),
+                                            configs_.data.get('id'),
+                                            configs_.data.get('collectors')[0],
+                                            configs_.data.get('name'),
+                                            configs_.data.get('interval'),
+                                            configs_.data.get('address'),
+                                            configs_.data.get('user'),
+                                            configs_.data.get('pswd'),
+                                            LOG)
+            agent_.loop(secs=10)
+
+        else:
+            LOG.warning('Not supported yet!')
 
     except KeyboardInterrupt:
         LOG.warning("User interruption!")
@@ -75,6 +91,7 @@ def main(argv=None):
     if agent_:
         agent_.join(timeout=10)
 
+    LOG.info('bye bye...')
     return True
 
 if __name__ == '__main__':

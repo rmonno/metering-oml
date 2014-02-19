@@ -1,5 +1,7 @@
 import threading
 import time
+import random
+import string
 from abc import ABCMeta, abstractmethod
 from oml4py import OMLBase
 
@@ -69,19 +71,50 @@ class Agent(threading.Thread):
             return self.__stop.isSet()
 
 
-class VTAgent(Agent):
+class TestAgent(Agent):
+    """ Test AGENT class"""
     def __init__(self, app_name, app_domain, app_id, collector_url,
-                 mp_name, interval, vt_am, logger=None):
-        super(VTAgent, self).__init__(app_name, app_domain, app_id,
-                                      collector_url, interval, logger)
+                 mp_name, interval, logger=None):
+        super(TestAgent, self).__init__(app_name,
+                                        app_domain,
+                                        app_id,
+                                        collector_url,
+                                        interval,
+                                        logger)
         self.mp_name = mp_name
-        self.vt_am = vt_am
-        self.info("VTAgent name=%s, vt_am=%s" % (self.mp_name, self.vt_am,))
+        self.info("TestAgent name=%s" % (self.mp_name,))
 
     def define_measurements(self):
-        self.info("define measurements")
-        self.oml.addmp(self.mp_name, "freq:string amplitude:int32")
+        ms_format_ = "freq:string amplitude:int32"
+        self.oml.addmp(self.mp_name, ms_format_)
+        self.info("%s: defined measurements format=%s" % (self.mp_name, ms_format_))
 
     def action(self):
-        self.info("send meters to collector")
-        self.oml.inject(self.mp_name, ['pippuzzo', 14])
+        data_ = [''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)]),
+                 random.randint(0,100)]
+        self.oml.inject(self.mp_name, data_)
+        self.info("%s: sent data to collector=%s" % (self.mp_name, data_))
+
+
+class XenServerAgent(Agent):
+    """ XenServer AGENT class"""
+    def __init__(self, app_name, app_domain, app_id, collector_url,
+                 mp_name, interval, addr, user, pswd, logger=None):
+        super(XenServerAgent, self).__init__(app_name,
+                                             app_domain,
+                                             app_id,
+                                             collector_url,
+                                             interval,
+                                             logger)
+        self.mp_name = mp_name
+        self.address = addr
+        self.user = user
+        self.pswd = pswd
+        self.info("XenServerAgent name=%s, addr=%s, user=%s, pswd=%s" %
+                  (self.mp_name, self.address, self.user, self.pswd))
+
+    def define_measurements(self):
+        self.error('Not implemented yet')
+
+    def action(self):
+        self.error('Not implemented yet')

@@ -1,10 +1,16 @@
 <omlc domain="ocf-measurement-oml" id="oml-192.168.57.200">
     <collect url="tcp:127.0.0.1:3003">
-        <stream mp="vtAmMPoint" interval="5" type="vm-server">
-            <vt-am address="127.0.0.1" port="9999" />
+        <stream mp="XenServerMPoint" interval="5" type="xenserver">
+            <address>127.0.0.1</address>
+            <user>root</user>
+            <pswd>root-password</pswd>
         </stream>
 
         <stream mp="optinAmMPoint" interval="1" type="flowvisor">
         </stream>
+
+        <stream mp="TestMPoint" interval="10" type="test">
+        </stream>
+
     </collect>
 </omlc>

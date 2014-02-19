@@ -47,11 +47,10 @@ class ConfigParser(object):
                 self.data['name'] = streams_.attrib.get('mp')
                 self.data['interval'] = streams_.attrib.get('interval')
 
-            if streams_.attrib.get('type') == 'vm-server':
-                self.data['vt_ams'] = []
-                for vt_am_ in streams_:
-                    self.data['vt_ams'].append((vt_am_.attrib.get('address'),
-                                                vt_am_.attrib.get('port')))
+                if streams_.attrib.get('type') == 'xenserver':
+                    self.data['address'] = streams_.findtext('address')
+                    self.data['user'] = streams_.findtext('user')
+                    self.data['pswd'] = streams_.findtext('pswd')
 
     def __str__(self):
         return "%s" % (self.data)
