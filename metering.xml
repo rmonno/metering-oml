@@ -6,7 +6,9 @@
             <pswd>root-password</pswd>
         </stream>
 
-        <stream mp="optinAmMPoint" interval="1" type="flowvisor">
+        <stream mp="ENoxMPoint" interval="2" type="enoxcontroller">
+            <address>10.0.2.163</address>
+            <port>8080</port>
         </stream>
 
         <stream mp="TestMPoint" interval="10" type="test">

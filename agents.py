@@ -127,3 +127,89 @@ class XenServerAgent(Agent):
 
         except requests.exceptions.RequestException as e:
             self.error(str(e))
+
+
+class ENoxControllerAgent(Agent):
+    """ ENox-Controller AGENT class"""
+    def __init__(self, app_name, app_domain, app_id, collector_url,
+                 mp_name, interval, addr, port, logger=None):
+        super(ENoxControllerAgent, self).__init__(app_name,
+                                                  app_domain,
+                                                  app_id,
+                                                  collector_url,
+                                                  interval,
+                                                  logger)
+        self.mp_name = mp_name
+        self.url = 'http://' + addr + ':' + port + '/'
+        self.ports = []
+        self.info("ENoxControllerAgent name=%s, url=%s" %
+                  (self.mp_name, self.url,))
+
+    def get_ports(self):
+        try:
+            r_ = requests.get(url=self.url + 'ports')
+            if r_.status_code != requests.codes.ok:
+                self.error("%s: ports failure=%d" %\
+                           (self.mp_name, r_.status_code,))
+            else:
+                self.ports = [(x['dpid'], x['port_no'])
+                              for x in r_.json()['ports']]
+                self.info("%s: ports(%d)=%s" %\
+                          (self.mp_name, len(self.ports), self.ports,))
+
+        except Exception as e:
+            self.error(str(e))
+
+    def get_port_stats(self):
+        try:
+            (dpid, portno) = self.ports.pop()
+            r_ = requests.get(url=self.url + 'pckt_port_stats_info',
+                              params={'dpid':dpid, 'portno': portno})
+            if r_.status_code != requests.codes.ok:
+                self.error("%s: ports stats failure=%d [dpid=%s, portno=%s]" %\
+                           (self.mp_name, r_.status_code, dpid, portno,))
+            else:
+                for x in r_.json()['packet_port_stats']:
+                    data_ = [dpid,
+                             x.get('port_no', int(portno)),
+                             x.get('tx_pkts', 0),
+                             x.get('rx_pkts', 0),
+                             x.get('tx_bytes', 0),
+                             x.get('rx_bytes', 0),
+                             x.get('tx_dropped', 0),
+                             x.get('rx_dropped', 0),
+                             x.get('tx_errors', 0),
+                             x.get('rx_errors', 0),
+                             x.get('collisions', 0),
+                             x.get('rx_over_err', 0),
+                             x.get('rx_frame_err', 0),
+                             x.get('rx_crc_err', 0)]
+                    self.oml.inject(self.mp_name, data_)
+                    self.info("%s: sent data to collector=%s" % (self.mp_name, data_))
+
+        except Exception as e:
+            self.error(str(e))
+
+    def define_measurements(self):
+        ms_format_ = "dpid:string "        +\
+                     "portno:int32 "       +\
+                     "tx_pkts:int64 "      +\
+                     "rx_pkts:int64 "      +\
+                     "tx_bytes:int64 "     +\
+                     "rx_bytes:int64 "     +\
+                     "tx_dropped:int64 "   +\
+                     "rx_dropped:int64 "   +\
+                     "tx_errors:int64 "    +\
+                     "rx_errors:int64 "    +\
+                     "collision:int64 "    +\
+                     "rx_over_err:int64 "  +\
+                     "rx_frame_err:int64 " +\
+                     "rx_crc_err:int64 "
+        self.oml.addmp(self.mp_name, ms_format_)
+        self.info("%s: defined measurements format=%s" % (self.mp_name, ms_format_))
+
+    def action(self):
+        if len(self.ports) == 0:
+            self.get_ports()
+        else:
+            self.get_port_stats()

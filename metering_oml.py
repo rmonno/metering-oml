@@ -24,7 +24,7 @@ def main(argv=None):
                                           formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
         parser_.add_argument('agent',
-                             choices=['flowvisor', 'xenserver', 'test'],
+                             choices=['enoxcontroller', 'xenserver', 'test'],
                              help='choose the type of agent')
 
         parser_.add_argument('-d', '--debug',
@@ -75,6 +75,18 @@ def main(argv=None):
                                             configs_.data.get('user'),
                                             configs_.data.get('pswd'),
                                             LOG)
+            agent_.loop(secs=10)
+
+        elif args_.agent == 'enoxcontroller':
+            agent_ = agents.ENoxControllerAgent('ENoxControllerAgent',
+                                                configs_.data.get('domain'),
+                                                configs_.data.get('id'),
+                                                configs_.data.get('collectors')[0],
+                                                configs_.data.get('name'),
+                                                configs_.data.get('interval'),
+                                                configs_.data.get('address'),
+                                                configs_.data.get('port'),
+                                                LOG)
             agent_.loop(secs=10)
 
         else:

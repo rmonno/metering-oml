@@ -52,5 +52,9 @@ class ConfigParser(object):
                     self.data['user'] = streams_.findtext('user')
                     self.data['pswd'] = streams_.findtext('pswd')
 
+                if streams_.attrib.get('type') == 'enoxcontroller':
+                    self.data['address'] = streams_.findtext('address')
+                    self.data['port'] = streams_.findtext('port')
+
     def __str__(self):
         return "%s" % (self.data)
