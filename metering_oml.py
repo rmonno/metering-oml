@@ -24,7 +24,7 @@ def main(argv=None):
                                           formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
         parser_.add_argument('agent',
-                             choices=['enoxcontroller', 'xenserver', 'test'],
+                             choices=['enoxcontroller', 'odlcontroller', 'xenserver', 'test'],
                              help='choose the type of agent')
 
         parser_.add_argument('-d', '--debug',
@@ -66,15 +66,15 @@ def main(argv=None):
 
         elif args_.agent == 'xenserver':
             agent_ = agents.XenServerAgent('XenServerAgent',
-                                            configs_.data.get('domain'),
-                                            configs_.data.get('id'),
-                                            configs_.data.get('collectors')[0],
-                                            configs_.data.get('name'),
-                                            configs_.data.get('interval'),
-                                            configs_.data.get('address'),
-                                            configs_.data.get('user'),
-                                            configs_.data.get('pswd'),
-                                            LOG)
+                                           configs_.data.get('domain'),
+                                           configs_.data.get('id'),
+                                           configs_.data.get('collectors')[0],
+                                           configs_.data.get('name'),
+                                           configs_.data.get('interval'),
+                                           configs_.data.get('address'),
+                                           configs_.data.get('user'),
+                                           configs_.data.get('pswd'),
+                                           LOG)
             agent_.loop(secs=10)
 
         elif args_.agent == 'enoxcontroller':
@@ -87,6 +87,20 @@ def main(argv=None):
                                                 configs_.data.get('address'),
                                                 configs_.data.get('port'),
                                                 LOG)
+            agent_.loop(secs=10)
+
+        elif args_.agent == 'odlcontroller':
+            agent_ = agents.ODLControllerAgent('ODLControllerAgent',
+                                               configs_.data.get('domain'),
+                                               configs_.data.get('id'),
+                                               configs_.data.get('collectors')[0],
+                                               configs_.data.get('name'),
+                                               configs_.data.get('interval'),
+                                               configs_.data.get('address'),
+                                               configs_.data.get('port'),
+                                               configs_.data.get('user'),
+                                               configs_.data.get('pswd'),
+                                               LOG)
             agent_.loop(secs=10)
 
         else:

@@ -213,3 +213,69 @@ class ENoxControllerAgent(Agent):
             self.get_ports()
         else:
             self.get_port_stats()
+
+
+class ODLControllerAgent(Agent):
+    """ OpenDayLight-Controller AGENT class"""
+    def __init__(self, app_name, app_domain, app_id, collector_url,
+                 mp_name, interval, addr, port, user, pswd, logger=None):
+        super(ODLControllerAgent, self).__init__(app_name,
+                                                 app_domain,
+                                                 app_id,
+                                                 collector_url,
+                                                 interval,
+                                                 logger)
+        self.mp_name = mp_name
+        self.url = 'http://' + addr + ':' + port + '/'
+        self.auth = (user, pswd)
+        self.info("ODLControllerAgent name=%s, url=%s, auth=%s" %
+                  (self.mp_name, self.url, self.auth,))
+
+    def define_measurements(self):
+        ms_format_ = "dpid:string "        +\
+                     "portno:int32 "       +\
+                     "tx_pkts:int64 "      +\
+                     "rx_pkts:int64 "      +\
+                     "tx_bytes:int64 "     +\
+                     "rx_bytes:int64 "     +\
+                     "tx_dropped:int64 "   +\
+                     "rx_dropped:int64 "   +\
+                     "tx_errors:int64 "    +\
+                     "rx_errors:int64 "    +\
+                     "collision:int64 "    +\
+                     "rx_over_err:int64 "  +\
+                     "rx_frame_err:int64 " +\
+                     "rx_crc_err:int64 "
+        self.oml.addmp(self.mp_name, ms_format_)
+        self.info("%s: defined measurements format=%s" % (self.mp_name, ms_format_))
+
+    def action(self):
+        try:
+            r_ = requests.get(url=self.url + 'controller/nb/v2/statistics/default/port',
+                              auth=self.auth)
+            if r_.status_code != requests.codes.ok:
+                self.error("%s: ports stats failure=%d" %\
+                           (self.mp_name, r_.status_code,))
+            else:
+                for x in r_.json().get('portStatistics'):
+                    dpid_ = x.get('node').get('id')
+                    for y in x.get('portStatistic'):
+                        data_ = [dpid_,
+                                 y.get('nodeConnector').get('id'),
+                                 y.get('transmitPackets', 0),
+                                 y.get('receivePackets', 0),
+                                 y.get('transmitBytes', 0),
+                                 y.get('receiveBytes', 0),
+                                 y.get('transmitDrops', 0),
+                                 y.get('receiveDrops', 0),
+                                 y.get('transmitErrors', 0),
+                                 y.get('receiveErrors', 0),
+                                 y.get('collisionCount', 0),
+                                 y.get('receiveOverRunError', 0),
+                                 y.get('receiveFrameError', 0),
+                                 y.get('receiveCrcError', 0)]
+                        self.oml.inject(self.mp_name, data_)
+                        self.info("%s: sent data to collector=%s" % (self.mp_name, data_))
+
+        except Exception as e:
+            self.error(str(e))

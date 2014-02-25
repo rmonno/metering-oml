@@ -11,6 +11,13 @@
             <port>8080</port>
         </stream>
 
+        <stream mp="ODLMPoint" interval="10" type="odlcontroller">
+            <address>10.0.2.243</address>
+            <port>8080</port>
+            <user>admin</user>
+            <pswd>admin</pswd>
+        </stream>
+
         <stream mp="TestMPoint" interval="10" type="test">
         </stream>
 
